@@ -1,0 +1,9 @@
+{
+	"username" : "yourUsername",
+	"bio" : "who are you?",
+	"datUrl"	: "dat://yourdaturl",
+	"email" : "you@email.com",
+	"users" : [
+		"dat://4678e847769d0a0848a2a70d51c5db1c3092e90ab11fd73785b19744c7a19b49/"
+	]
+}
