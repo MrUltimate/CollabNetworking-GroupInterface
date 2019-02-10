@@ -25,105 +25,108 @@
 
 /******************************************************************************/
 
-async function loadProfile(archive){
-	var profile = await archive.readFile('/profile.json')
-	profile = JSON.parse(profile)
+async function loadProfile(archive) {
+  var profile = await archive.readFile('/profile.json')
+  profile = JSON.parse(profile)
 
-	var userInfo = {
-		"profile" : profile,
-		"archive" : archive
-	}
+  var userInfo = {
+    "profile": profile,
+    "archive": archive
+  }
 
-	return userInfo
+  return userInfo
 }
 
 /******************************************************************************/
 
-async function loadshapes(archive){
-	var shapes = await archive.readdir('/shapes/', {stat: true});
+async function loadshapes(archive) {
+  var shapes = await archive.readdir('/shapes/', {
+    stat: true
+  });
 
-	var usershapes = {
-		"shapes" : shapes,
-		"archive" : archive
-	}
+  var usershapes = {
+    "shapes": shapes,
+    "archive": archive
+  }
 
-	return usershapes
+  return usershapes
 }
 
 /******************************************************************************/
 
-async function loadshapeContent(archive, shape){
-	var shapeLink = '/shapes/' + shape.name;
-	// console.log(shapeLink)
-	var shapeContent = await archive.readFile(shapeLink)
+async function loadshapeContent(archive, shape) {
+  var shapeLink = '/shapes/' + shape.name;
+  // console.log(shapeLink)
+  var shapeContent = await archive.readFile(shapeLink)
 
-	var shapeAndArchive = {
-		"shape" : JSON.parse(shapeContent),
-		"archive" : archive
-	}
+  var shapeAndArchive = {
+    "shape": JSON.parse(shapeContent),
+    "archive": archive
+  }
 
-	return shapeAndArchive
+  return shapeAndArchive
 }
 
 /******************************************************************************/
 
-async function loadUsersCentral(archive, fileName){
-	var getUserList = await archive.readFile(fileName);
-	getUserList = JSON.parse(getUserList)
+async function loadUsersCentral(archive, fileName) {
+  var getUserList = await archive.readFile(fileName);
+  getUserList = JSON.parse(getUserList)
 
-	var userList = {
-		"users" : getUserList.users,
-		"archive" : archive
-	}
+  var userList = {
+    "users": getUserList.users,
+    "archive": archive
+  }
 
-	return userList;
+  return userList;
 }
 
 /******************************************************************************/
 
-async function isOwner(archive){
-	var pageInfo = await archive.getInfo();
-	return pageInfo.isOwner;
+async function isOwner(archive) {
+  var pageInfo = await archive.getInfo();
+  return pageInfo.isOwner;
 }
 
 /******************************************************************************/
 
-function writeshape(archive, shapeSubmission){
-	var archive = archive;
+function writeshape(archive, shapeSubmission) {
+  var archive = archive;
 
-	// when someone clicks submit:
-	shapeSubmission.addEventListener("submit",function(e) {
-  	e.preventDefault(); // avoid default behavior
-  	var shapeRecieved = e.target,
-  			shapeType = shapeRecieved.elements["type"].value.toString(), //only square, circle, or triangle; we can add more later
-  			shapeSize = shapeRecieved.elements["size"].value.toString(),
-				shapeX = shapeRecieved.elements["x"].value.toString(),
-				shapeY = shapeRecieved.elements["y"].value.toString(),
-				shapeColor = shapeRecieved.elements["color"].value.toString(),
-  			timestamp = new Date().getTime();
+  // when someone clicks submit:
+  shapeSubmission.addEventListener("submit", function(e) {
+    e.preventDefault(); // avoid default behavior
+    var shapeRecieved = e.target,
+      shapeType = shapeRecieved.elements["type"].value.toString(), //only square, circle, or triangle; we can add more later
+      shapeSize = shapeRecieved.elements["size"].value.toString(),
+      shapeX = shapeRecieved.elements["x"].value.toString(),
+      shapeY = shapeRecieved.elements["y"].value.toString(),
+      shapeColor = shapeRecieved.elements["color"].value.toString(),
+      timestamp = new Date().getTime();
 
-  	// set up object to submit to shape:
-  	var shapeContent = {
-			"type": shapeType,
-		  "size": shapeSize,
-		  "x": shapeX,
-		  "y": shapeY,
-		  "color": shapeColor
-  	}
+    // set up object to submit to shape:
+    var shapeContent = {
+      "type": shapeType,
+      "size": shapeSize,
+      "x": shapeX,
+      "y": shapeY,
+      "color": shapeColor,
+      "timestamp": timestamp
+    }
 
-  	// use archive (the DatArchive) to write a file
-  	async function shapeFile(archive, shapeContent){
-  		await archive.writeFile('/shapes/shape-' + shapeContent.timestamp + '.json', JSON.stringify(shapeContent));
-  	}
+    // use archive (the DatArchive) to write a file
+    async function shapeFile(archive, shapeContent) {
+      await archive.writeFile('/shapes/shape-' + shapeContent.timestamp + '.json', JSON.stringify(shapeContent, null, 2));
+    }
 
-  	shapeFile(archive, shapeContent)
-  	.then(function(event){
-  		console.log("shape is posted!")
-  	})
-  	.catch(function(error){
-  		console.log("error\n", error)
-  	})
-	});
+    shapeFile(archive, shapeContent)
+      .then(function(event) {
+        console.log("shape is posted!")
+      })
+      .catch(function(error) {
+        console.log("error\n", error)
+      })
+  });
 }
 
 
@@ -134,15 +137,15 @@ function writeshape(archive, shapeSubmission){
 
 
 
-function usersProfiles(userCounter, userList, profilesContainer){
-	// recursive function listing all users
-	var userUrl = new DatArchive(userList[userCounter]),
-			userAmount = userList.length;
+function usersProfiles(userCounter, userList, profilesContainer) {
+  // recursive function listing all users
+  var userUrl = new DatArchive(userList[userCounter]),
+    userAmount = userList.length;
 
-	loadProfile(userUrl)
-	.then(function(userInfo){
+  loadProfile(userUrl)
+    .then(function(userInfo) {
 
-		profilesContainer.insertAdjacentHTML("beforeend", `
+      profilesContainer.insertAdjacentHTML("beforeend", `
 			<li>
 				<hr />
 				<h2>
@@ -155,31 +158,31 @@ function usersProfiles(userCounter, userList, profilesContainer){
 			</li>
 		`)
 
-		if(userCounter < userAmount - 1){
-			//foreach appending shapes for this user is over
-			userCounter++;
-			usersProfiles(userCounter, userList, profilesContainer) // move to next user
-		}
+      if (userCounter < userAmount - 1) {
+        //foreach appending shapes for this user is over
+        userCounter++;
+        usersProfiles(userCounter, userList, profilesContainer) // move to next user
+      }
 
-	})
-	.catch(function(error){
-		console.log("error thrown\n", error)
-	})
+    })
+    .catch(function(error) {
+      console.log("error thrown\n", error)
+    })
 }
 
 /******************************************************************************/
 
-function userAndTheirshapes(userCounter, userList, watchingContainer){
-	// get username from dat url
-	var userUrl = new DatArchive(userList[userCounter]);
-			userAmount = userList.length;
+function userAndTheirshapes(userCounter, userList, watchingContainer) {
+  // get username from dat url
+  var userUrl = new DatArchive(userList[userCounter]);
+  userAmount = userList.length;
 
-	// load user profile:
-	loadProfile(userUrl)
-	.then(function(userInfo){
-		var userId = "user-" + userInfo.archive.url.replace("dat://", ""); // dynamically generated id to be populated later
+  // load user profile:
+  loadProfile(userUrl)
+    .then(function(userInfo) {
+      var userId = "user-" + userInfo.archive.url.replace("dat://", ""); // dynamically generated id to be populated later
 
-		watchingContainer.insertAdjacentHTML("beforeend", `
+      watchingContainer.insertAdjacentHTML("beforeend", `
 			<li>
 				<hr />
 				<h2>
@@ -193,38 +196,38 @@ function userAndTheirshapes(userCounter, userList, watchingContainer){
 			</li>
 		`)
 
-		return userInfo.archive;
+      return userInfo.archive;
 
-	})
-	.then(function(userArchive){
+    })
+    .then(function(userArchive) {
 
-		// load shapes of user:
-		loadshapes(userArchive)
-		.then(function(usershapes){
-			// this user's shapes:
-			console.log(usershapes)
-			var userId = "user-" + usershapes.archive.url.replace("dat://", ""); // dynamically generated id
+      // load shapes of user:
+      loadshapes(userArchive)
+        .then(function(usershapes) {
+          // this user's shapes:
+          console.log(usershapes)
+          var userId = "user-" + usershapes.archive.url.replace("dat://", ""); // dynamically generated id
 
-			var amountOfshapes = usershapes.shapes.length,
-					shapeCounter = 0;
+          var amountOfshapes = usershapes.shapes.length,
+            shapeCounter = 0;
 
-			usershapes.shapes.forEach(function(shape){
+          usershapes.shapes.forEach(function(shape) {
 
-				loadshapeContent(userUrl, shape)
-				.then(function(shapeAndArchive){
+            loadshapeContent(userUrl, shape)
+              .then(function(shapeAndArchive) {
 
-					var shape = shapeAndArchive.shape;
-					var thisshapeContent = shape.content;
+                var shape = shapeAndArchive.shape;
+                var thisshapeContent = shape.content;
 
-					// rough image replacement:
-					var usershapeContainer = document.getElementById(userId) // dynamically generated id
-					if(JSON.stringify(shape.content).includes('src=\\"')){
-						thisshapeContent = JSON.stringify(thisshapeContent).replace('src=\\"', 'src="' + shapeAndArchive.archive.url + "/");
-					}else if(JSON.stringify(shape.content).includes("src=\\'")){
-						thisshapeContent = JSON.stringify(thisshapeContent).replace("src=\\'", "src='" + shapeAndArchive.archive.url + "/");
-					}
+                // rough image replacement:
+                var usershapeContainer = document.getElementById(userId) // dynamically generated id
+                if (JSON.stringify(shape.content).includes('src=\\"')) {
+                  thisshapeContent = JSON.stringify(thisshapeContent).replace('src=\\"', 'src="' + shapeAndArchive.archive.url + "/");
+                } else if (JSON.stringify(shape.content).includes("src=\\'")) {
+                  thisshapeContent = JSON.stringify(thisshapeContent).replace("src=\\'", "src='" + shapeAndArchive.archive.url + "/");
+                }
 
-					usershapeContainer.insertAdjacentHTML("beforeend", `
+                usershapeContainer.insertAdjacentHTML("beforeend", `
 						<li>
 							<hr />
 							<h2>${shape.title}</h2>
@@ -233,21 +236,33 @@ function userAndTheirshapes(userCounter, userList, watchingContainer){
 						</li>
 					`)
 
-					shapeCounter++;
-					// console.log(shapeCounter, amountOfshapes, userCounter, userAmount)
-					if(shapeCounter >= amountOfshapes && userCounter < userAmount - 1){
-						//foreach appending shapes for this user is over
-						userCounter++;
-						userAndTheirshapes(userCounter, userList, watchingContainer) // move to next user
-					}
-				})
-			})
-		})
-		.catch(function(error){
-			console.log("error thrown\n", error)
-		}) //end of loadshapes.then
-	})
-	.catch(function(error){
-		console.log("error thrown\n", error)
-	})
+                shapeCounter++;
+                // console.log(shapeCounter, amountOfshapes, userCounter, userAmount)
+                if (shapeCounter >= amountOfshapes && userCounter < userAmount - 1) {
+                  //foreach appending shapes for this user is over
+                  userCounter++;
+                  userAndTheirshapes(userCounter, userList, watchingContainer) // move to next user
+                }
+              })
+          })
+        })
+        .catch(function(error) {
+          console.log("error thrown\n", error)
+        }) //end of loadshapes.then
+    })
+    .catch(function(error) {
+      console.log("error thrown\n", error)
+    })
 } // end of function
+
+function triangleFix() {
+	$('.triangle').each(function() {
+		$this = $(this);
+		console.log($this);
+		var w = $this.width()*3;
+		console.log("writing triangle with w: " + w);
+		$this.css("border-left", w + "px solid transparent");
+		$this.css("border-right", w + "px solid transparent");
+		$this.css("border-bottom", w+ "px solid red")
+	});
+}
