@@ -1,26 +1,26 @@
-/* NETWORK INTERFACING 
+/* NETWORK INTERFACING
 	- prebuilt functions, 1.0
 
-	available functions: 
+	available functions:
 	- loadProfile
 		get profile object
-	- loadPosts 
-		get a list of a user's posts
-	- loadPostContent
-		get content of each post and append
+	- loadshapes
+		get a list of a user's shapes
+	- loadshapeContent
+		get content of each shape and append
 
 	- loadUsersCentral
 		get a list of users from an external source
 	- usersProfiles
 		use a list of users and return their profile
-	- userAndTheirPosts
-		use a list of users and return their profile + all their posts
+	- userAndTheirshapes
+		use a list of users and return their profile + all their shapes
 
 	- isOwner
 		check if you are the site's owner
-	- writePost
-		submit a post interface
-	
+	- writeshape
+		submit a shape interface
+
 */
 
 /******************************************************************************/
@@ -39,30 +39,30 @@ async function loadProfile(archive){
 
 /******************************************************************************/
 
-async function loadPosts(archive){
-	var posts = await archive.readdir('/posts/', {stat: true});
-	
-	var userPosts = {
-		"posts" : posts,
+async function loadshapes(archive){
+	var shapes = await archive.readdir('/shapes/', {stat: true});
+
+	var usershapes = {
+		"shapes" : shapes,
 		"archive" : archive
 	}
 
-	return userPosts
+	return usershapes
 }
 
 /******************************************************************************/
 
-async function loadPostContent(archive, post){
-	var postLink = '/posts/' + post.name;
-	// console.log(postLink)
-	var postContent = await archive.readFile(postLink)
-	
-	var postAndArchive = {
-		"post" : JSON.parse(postContent),
+async function loadshapeContent(archive, shape){
+	var shapeLink = '/shapes/' + shape.name;
+	// console.log(shapeLink)
+	var shapeContent = await archive.readFile(shapeLink)
+
+	var shapeAndArchive = {
+		"shape" : JSON.parse(shapeContent),
 		"archive" : archive
 	}
 
-	return postAndArchive
+	return shapeAndArchive
 }
 
 /******************************************************************************/
@@ -88,32 +88,37 @@ async function isOwner(archive){
 
 /******************************************************************************/
 
-function writePost(archive, postSubmission){
+function writeshape(archive, shapeSubmission){
 	var archive = archive;
 
 	// when someone clicks submit:
-	postSubmission.addEventListener("submit",function(e) {
+	shapeSubmission.addEventListener("submit",function(e) {
   	e.preventDefault(); // avoid default behavior
-  	var formRecieved = e.target,
-  			formTitle = formRecieved.elements["Title"].value.toString(),
-  			formContents = formRecieved.elements["Content"].value.toString(),
+  	var shapeRecieved = e.target,
+  			shapeType = shapeRecieved.elements["type"].value.toString(), //only square, circle, or triangle; we can add more later
+  			shapeSize = shapeRecieved.elements["size"].value.toString(),
+				shapeX = shapeRecieved.elements["x"].value.toString(),
+				shapeY = shapeRecieved.elements["y"].value.toString(),
+				shapeColor = shapeRecieved.elements["color"].value.toString(),
   			timestamp = new Date().getTime();
 
-  	// set up object to submit to post:
-  	var postContent = {
-  		"title" : formTitle,
-  		"timestamp" : timestamp,
-  		"content" : formContents
+  	// set up object to submit to shape:
+  	var shapeContent = {
+			"type": shapeType,
+		  "size": shapeSize,
+		  "x": shapeX,
+		  "y": shapeY,
+		  "color": shapeColor
   	}
 
   	// use archive (the DatArchive) to write a file
-  	async function postFile(archive, postContent){
-  		await archive.writeFile('/posts/post-' + postContent.timestamp + '.json', JSON.stringify(postContent));
+  	async function shapeFile(archive, shapeContent){
+  		await archive.writeFile('/shapes/shape-' + shapeContent.timestamp + '.json', JSON.stringify(shapeContent));
   	}
 
-  	postFile(archive, postContent)
+  	shapeFile(archive, shapeContent)
   	.then(function(event){
-  		console.log("post is posted!")
+  		console.log("shape is posted!")
   	})
   	.catch(function(error){
   		console.log("error\n", error)
@@ -151,7 +156,7 @@ function usersProfiles(userCounter, userList, profilesContainer){
 		`)
 
 		if(userCounter < userAmount - 1){
-			//foreach appending posts for this user is over
+			//foreach appending shapes for this user is over
 			userCounter++;
 			usersProfiles(userCounter, userList, profilesContainer) // move to next user
 		}
@@ -164,7 +169,7 @@ function usersProfiles(userCounter, userList, profilesContainer){
 
 /******************************************************************************/
 
-function userAndTheirPosts(userCounter, userList, watchingContainer){
+function userAndTheirshapes(userCounter, userList, watchingContainer){
 	// get username from dat url
 	var userUrl = new DatArchive(userList[userCounter]);
 			userAmount = userList.length;
@@ -193,54 +198,54 @@ function userAndTheirPosts(userCounter, userList, watchingContainer){
 	})
 	.then(function(userArchive){
 
-		// load posts of user:
-		loadPosts(userArchive)
-		.then(function(userPosts){
-			// this user's posts: 
-			console.log(userPosts)
-			var userId = "user-" + userPosts.archive.url.replace("dat://", ""); // dynamically generated id
+		// load shapes of user:
+		loadshapes(userArchive)
+		.then(function(usershapes){
+			// this user's shapes:
+			console.log(usershapes)
+			var userId = "user-" + usershapes.archive.url.replace("dat://", ""); // dynamically generated id
 
-			var amountOfPosts = userPosts.posts.length,
-					postCounter = 0;
+			var amountOfshapes = usershapes.shapes.length,
+					shapeCounter = 0;
 
-			userPosts.posts.forEach(function(post){
-				
-				loadPostContent(userUrl, post)
-				.then(function(postAndArchive){
-					
-					var post = postAndArchive.post;
-					var thisPostContent = post.content;
-					
-					// rough image replacement: 
-					var userPostContainer = document.getElementById(userId) // dynamically generated id
-					if(JSON.stringify(post.content).includes('src=\\"')){
-						thisPostContent = JSON.stringify(thisPostContent).replace('src=\\"', 'src="' + postAndArchive.archive.url + "/");
-					}else if(JSON.stringify(post.content).includes("src=\\'")){						
-						thisPostContent = JSON.stringify(thisPostContent).replace("src=\\'", "src='" + postAndArchive.archive.url + "/");
+			usershapes.shapes.forEach(function(shape){
+
+				loadshapeContent(userUrl, shape)
+				.then(function(shapeAndArchive){
+
+					var shape = shapeAndArchive.shape;
+					var thisshapeContent = shape.content;
+
+					// rough image replacement:
+					var usershapeContainer = document.getElementById(userId) // dynamically generated id
+					if(JSON.stringify(shape.content).includes('src=\\"')){
+						thisshapeContent = JSON.stringify(thisshapeContent).replace('src=\\"', 'src="' + shapeAndArchive.archive.url + "/");
+					}else if(JSON.stringify(shape.content).includes("src=\\'")){
+						thisshapeContent = JSON.stringify(thisshapeContent).replace("src=\\'", "src='" + shapeAndArchive.archive.url + "/");
 					}
 
-					userPostContainer.insertAdjacentHTML("beforeend", `
+					usershapeContainer.insertAdjacentHTML("beforeend", `
 						<li>
 							<hr />
-							<h2>${post.title}</h2>
-							<h4>${post.timestamp}</h4>
-							<div>${thisPostContent}</div>
+							<h2>${shape.title}</h2>
+							<h4>${shape.timestamp}</h4>
+							<div>${thisshapeContent}</div>
 						</li>
 					`)
 
-					postCounter++;
-					// console.log(postCounter, amountOfPosts, userCounter, userAmount)
-					if(postCounter >= amountOfPosts && userCounter < userAmount - 1){
-						//foreach appending posts for this user is over
+					shapeCounter++;
+					// console.log(shapeCounter, amountOfshapes, userCounter, userAmount)
+					if(shapeCounter >= amountOfshapes && userCounter < userAmount - 1){
+						//foreach appending shapes for this user is over
 						userCounter++;
-						userAndTheirPosts(userCounter, userList, watchingContainer) // move to next user
+						userAndTheirshapes(userCounter, userList, watchingContainer) // move to next user
 					}
 				})
 			})
 		})
 		.catch(function(error){
 			console.log("error thrown\n", error)
-		}) //end of loadPosts.then
+		}) //end of loadshapes.then
 	})
 	.catch(function(error){
 		console.log("error thrown\n", error)

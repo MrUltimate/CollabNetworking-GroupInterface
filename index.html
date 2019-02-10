@@ -1,144 +1,137 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 	<meta charset="utf-8">
 	<title>Boilerplate User Interface</title>
 	<link rel="stylesheet" type="text/css" href="build/style.css">
 	<script type="text/javascript" src="build/network-interfacing.js"></script>
 </head>
+
 <body>
 
-	<!-- your profile: -->
-	<div id="profile"></div>
-	<!-- your posts: -->
-	<div id="posts"></div>
-	<hr><hr>
-
-	<div id="watching">
-		<!-- users you watch: -->
-		<!-- <h1>Other Users:</h1> -->
-		<ul id="watching_users"></ul>
-	</div>
-	<hr>
-	<hr>
-		
-	<ul id="central_list">
-		<!-- users from central list -->
-		<li>
-			<!-- <h1>Central list of users:</h1> -->
-		</li>
-	</ul>
+	<div class="shape-canvas" id="shape-canvas"></div>
 
 	<!-- interface for if you want to post: -->
 	<div id="post_interface"></div>
 
-<script type="text/javascript">
-		
-	window.onload = function(){  
-		console.log("boilerplate profile")
-		// doc elements
-		var profileContainer = document.getElementById("profile"),
-				postContainer = document.getElementById("posts"),
+	<script type="text/javascript">
+		window.onload = function() {
+			console.log("boilerplate profile")
+			// doc elements
+			var profileContainer = document.getElementById("profile"),
+				shapeContainer = document.getElementById("shape-canvas"),
 				watchingContainer = document.getElementById("watching"),
 				watchingList = document.getElementById("watching_users"),
-				postingInterface = document.getElementById("post_interface"),
+				shape_interface = document.getElementById("post_interface"),
 				centralListContainer = document.getElementById("central_list");
 
-		// dat vars for your personal page (automatically generated)
-		// var url = "dat://"
-		var url = window.location.toString(),
+			// dat vars for your personal page (automatically generated)
+			// var url = "dat://"
+			var url = window.location.toString(),
 				archive = new DatArchive(url);
 
-		/******************************************************************************/
+			/******************************************************************************/
 
-		loadProfile(archive)
-		.then(function(userInfo){
-			// append profile info: 
-			var username = userInfo.profile.username,
-					bio = userInfo.profile.bio,
-					datUrl = userInfo.profile.datUrl,
-					email = userInfo.profile.email;
+			// loadProfile(archive)
+			// .then(function(userInfo){
+			// 	// append profile info:
+			// 	var username = userInfo.profile.username,
+			// 			bio = userInfo.profile.bio,
+			// 			datUrl = userInfo.profile.datUrl,
+			// 			email = userInfo.profile.email;
+			//
+			// 	profileContainer.insertAdjacentHTML("beforeend", `
+			// 		<h1>${username}</h1>
+			// 		<h2>${bio}</h2>
+			// 		<h3>${datUrl}</h3>
+			// 		<h3>${email}</h3>
+			// 	`);
+			//
+			// 	var userCounter = 0,
+			// 			userList = userInfo.profile.users;
+			//
+			// 	// usersProfiles(userCounter, userList, centralListContainer) // all users and a link to their site
+			//
+			// 	// userAndTheirshapes(userCounter, userList, watchingContainer) // all users and their shapes
+			//
+			// });
 
-			profileContainer.insertAdjacentHTML("beforeend", `
-				<h1>${username}</h1>
-				<h2>${bio}</h2>
-				<h3>${datUrl}</h3>
-				<h3>${email}</h3>
-			`);
+			/******************************************************************************/
 
-			var userCounter = 0, 
-					userList = userInfo.profile.users;
-			
-			// usersProfiles(userCounter, userList, centralListContainer) // all users and a link to their site
+			// load my shapes
+			loadshapes(archive)
+				.then(function(usershapes) {
+					usershapes.shapes.forEach(function(shape) {
+						loadshapeContent(archive, shape)
+							.then(function(shapeAndArchive) {
+								console.log("shape", shapeAndArchive.shape)
+								shapeContainer.insertAdjacentHTML("beforeend",
+									`
+						<div class="shape ${shapeAndArchive.shape.type}" style="top: ${shapeAndArchive.shape.x}px; left: ${shapeAndArchive.shape.y}px; background-color: #${shapeAndArchive.shape.color}; width: ${shapeAndArchive.shape.size}px; height:${shapeAndArchive.shape.size}px;"></div>
+					`
+								)
+							})
+					})
+				});
 
-			// userAndTheirPosts(userCounter, userList, watchingContainer) // all users and their posts
+			/******************************************************************************/
 
-		});
-
-		/******************************************************************************/
-
-		// load my posts
-		loadPosts(archive)
-		.then(function(userPosts){
-			userPosts.posts.forEach(function(post){
-				loadPostContent(archive, post)
-				.then(function(postAndArchive){
-					console.log("post", postAndArchive.post)
-					postContainer.insertAdjacentHTML("beforeend", `
-						<hr />
-						<h2>${postAndArchive.post.title}</h2>
-						<h4>${postAndArchive.post.timestamp}</h4>
-						<p>${postAndArchive.post.content}</p>
-					`)
-				})
-			})
-		});
-	
-		/******************************************************************************/
-
-		// if i'm the owner, reveal my interface: 
-		isOwner(archive)
-		.then(function(e){
-			if(e){
-				post_interface.insertAdjacentHTML("beforeend", `
+			// if i'm the owner, reveal my interface:
+			isOwner(archive)
+				.then(function(e) {
+					if (e) {
+						shape_interface.insertAdjacentHTML("beforeend",
+							`
 						<hr>
-						<h2>Post</h2>
-						<form id="post_to">
-							<p>Title</p>
-							<input type="text" name="Title" value=""><br><br>
-							<p>Content</p>
-							<textarea name="Content" rows="4" cols="50" value=""></textarea><br><br>
-							<input type="submit" name="Post">
+						<h2>Add Shape</h2>
+						<form id="shape_to">
+							<p>Shape:</p>
+							<label><input type="radio" name="type" value="square" checked> Square</label>
+						  <label><input type="radio" name="type" value="circle"> Circle</label>
+						  <label><input type="radio" name="type" value="triangle"> Triangle</label>
+							<br /> <br />
+							<p>Size:</p>
+							<textarea name="size" rows="1" cols="4" value=""></textarea><br><br>
+							<p>Color (#Hex):</p>
+							<textarea name="color" rows="1" cols="4" value="Eg: #000"></textarea><br><br>
+							<p>X Position:</p>
+							<textarea name="x" rows="1" cols="2" value=""></textarea><br><br>
+							<p>Y Position:</p>
+							<textarea name="y" rows="1" cols="2" value=""></textarea><br><br>
+							<input type="submit" name="shape">
 						</form>
-					`)
+					`
+						)
 
-				var postSubmission = document.getElementById("post_to");
-				writePost(archive, postSubmission);
+						var shapeSubmission = document.getElementById("shape_to");
+						writeshape(archive, shapeSubmission);
 
-			}else{
-				console.log("isOwner returns: ", e, "\n it looks like you are not the owner of this site");
-			}
-		})
+					} else {
+						console.log("isOwner returns: ", e, "\n it looks like you are not the owner of this site");
+					}
+				})
 
 
-		/******************************************************************************/
+			/******************************************************************************/
 
-		// once you've added the class dat url (below), you can uncomment this function to have a complete list sourced from our central files: 
+			// once you've added the class dat url (below), you can uncomment this function to have a complete list sourced from our central files:
 
-		/*
-		var classArchive = new DatArchive("CLASSHASHBASEURLHERE");
+			/*
+			var classArchive = new DatArchive("CLASSHASHBASEURLHERE");
 
-		loadUsersCentral(classArchive, "/classList.json")
-		.then(function(userList){
-			console.log("userList", userList)
-			var userCounter = 0,
-					userList = userList.users;
-			usersProfiles(userCounter, userList, centralListContainer)
+			loadUsersCentral(classArchive, "/classList.json")
+			.then(function(userList){
+				console.log("userList", userList)
+				var userCounter = 0,
+						userList = userList.users;
+				usersProfiles(userCounter, userList, centralListContainer)
 
-		})
-		*/
+			})
+			*/
 
-	};
-</script>
+		};
+	</script>
 </body>
+
 </html>

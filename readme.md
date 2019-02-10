@@ -12,7 +12,7 @@ The features outlined below are all built with the DatArchive API. Please review
 5. edit `profile.json` to update your profile
 6. publish all changes
 7. copy your `dat://` url to the class [spreadsheet](https://docs.google.com/spreadsheets/d/1VTTNBRftvCj-_L-M8hwBZuwXps4wBGrrRB6rER0Kqzc/edit?usp=sharing) and to your `profile.json` file. 
-8. once the spreadsheet is full, feel free to copy the urls and add them to your `post.json` file. 
+8. once the spreadsheet is full, feel free to copy the urls and add them to your `shape.json` file. 
 
 
 ### Features
@@ -57,8 +57,8 @@ Example:
 #### Simple async functions
 
 - `loadProfile(archive)` : get profile object
-- `loadPosts(archive)`  : get a list of a user's posts
-- `loadPostContent(archive, post)` : get content of each post and append
+- `loadshapes(archive)`  : get a list of a user's shapes
+- `loadshapeContent(archive, shape)` : get content of each shape and append
 - `loadUsersCentral(archive, jsonName)` : get a list of users from an external source
 
 the DatArchive API relies on [Promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then). We run an asynchronous (i.e. `async`) function that calls an external source (usually another dat url) and then "wait" for a response. 
@@ -117,15 +117,15 @@ yourFunction(counter)
 These functions are a little more complex. You will have to enter the ` build/network-interfacing.js` file to alter their template literals. Feel free to play around and mess them up—you can always re-download a clean copy!
 
 - `usersProfiles(userCounter, userList, mountingContainer)` : use a list of users and return their profile
-- `userAndTheirPosts(userCounter, userList, mountingContainer)` : use a list of users and return their profile + all their posts
+- `userAndTheirshapes(userCounter, userList, mountingContainer)` : use a list of users and return their profile + all their shapes
 
 
-### Posting Methods
-A key part of any network is the posting interface. The DatArchive API has a wonderful method built in that allows a site to recognize if you're the owner. If you are, you're given special permissions (like writing new files!). 
+### shapeing Methods
+A key part of any network is the shapeing interface. The DatArchive API has a wonderful method built in that allows a site to recognize if you're the owner. If you are, you're given special permissions (like writing new files!). 
 
 - `isOwner(archive)` : check if you are the site's owner (returns a boolean)
 	- `isOwner()` is built out of the `getInfo()` method. Read more [here](https://beakerbrowser.com/docs/apis/dat#getinfo).
-- `writePost(archive, postSubmission)` : submit a post interface
+- `writeshape(archive, shapeSubmission)` : submit a shape interface
 	- this function uses the API's `writeFile()` method. Read more [here](https://beakerbrowser.com/docs/apis/dat#writefile).
 
 
