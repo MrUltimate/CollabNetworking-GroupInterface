@@ -23,6 +23,7 @@
 
 */
 
+
 /******************************************************************************/
 
 async function loadProfile(archive) {
@@ -58,6 +59,48 @@ async function loadshapeContent(archive, shape) {
   var shapeLink = '/shapes/' + shape.name;
   // console.log(shapeLink)
   var shapeContent = await archive.readFile(shapeLink)
+
+  $(function() {
+  $(".shape").draggable();   
+  });
+
+  $(function() {
+  $(".shape").resizable();
+  });
+
+      var stack = Composites.stack(0, 0, 1, 1, 0, 0, function(x, y) {
+        var sides = Math.round(Common.random(1, 8));
+
+        // triangles can be a little unstable, so avoid until fixed
+        sides = (sides === 3) ? 4 : sides;
+
+        // round the edges of some bodies
+        var chamfer = null;
+        if (sides > 2 && Common.random() > 0.7) {
+            chamfer = {
+                radius: 10
+            };
+        }
+
+        switch (Math.round(Common.random(0, 1))) {
+        case 0:
+            if (Common.random() < 0.8) {
+                return Bodies.rectangle(x, y, Common.random(25, 50), Common.random(25, 50), { chamfer: chamfer });
+            } else {
+                return Bodies.rectangle(x, y, Common.random(80, 120), Common.random(25, 30), { chamfer: chamfer });
+            }
+        case 1:
+            return Bodies.polygon(x, y, sides, Common.random(25, 50), { chamfer: chamfer });
+        }
+    });
+
+        World.add(world, [
+        stack,
+        Bodies.rectangle(400, 0, 800, 50, { isStatic: true, strokeStyle: 'none', lineWidth: 0 }),
+        Bodies.rectangle(400, 600, 800, 50, { isStatic: true, strokeStyle: 'none', lineWidth: 0 }),
+        Bodies.rectangle(800, 300, 50, 600, { isStatic: true, strokeStyle: 'none', lineWidth: 0 }),
+        Bodies.rectangle(0, 300, 50, 600, { isStatic: true, strokeStyle: 'none', lineWidth: 0 })
+    ]);
 
   var shapeAndArchive = {
     "shape": JSON.parse(shapeContent),
@@ -101,7 +144,7 @@ function writeshape(archive, shapeSubmission) {
       shapeSize = shapeRecieved.elements["size"].value.toString(),
       shapeX = shapeRecieved.elements["x"].value.toString(),
       shapeY = shapeRecieved.elements["y"].value.toString(),
-      shapeColor = shapeRecieved.elements["color"].value.toString(),
+      shapeColor = shapeRecieved.elements["background-color"].value.toString(),
       timestamp = new Date().getTime();
 
     // set up object to submit to shape:
@@ -110,7 +153,7 @@ function writeshape(archive, shapeSubmission) {
       "size": shapeSize,
       "x": shapeX,
       "y": shapeY,
-      "color": shapeColor,
+      "background-color": shapeColor,
       "timestamp": timestamp
     }
 
@@ -253,6 +296,7 @@ function userAndTheirshapes(userCounter, userList, watchingContainer) {
     .catch(function(error) {
       console.log("error thrown\n", error)
     })
+
 } // end of function
 
 function triangleFix() {
@@ -266,3 +310,6 @@ function triangleFix() {
 		$this.css("border-bottom", w+ "px solid red")
 	});
 }
+
+/******************************************************************************/
+
